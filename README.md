@@ -10,7 +10,7 @@ Download the binary for your platform from the release page:
 
 ```bash
 sudo curl -fsL -o /usr/local/bin/slack https://github.com/kitproj/slack-cli/releases/download/v0.0.3/slack_v0.0.3_linux_arm64
-sudo chmod +x /usr/local/bin/slack 
+sudo chmod +x /usr/local/bin/slack
 ```
 
 
@@ -19,19 +19,16 @@ sudo chmod +x /usr/local/bin/slack
 Add this to your prompt (e.g. `AGENTS.md`):
 
 ```markdown
-- You can send messages to a Slack user by using the `slack send-message <username> "<message>"` command. You must not use double quotes in the message.
-- NEVER RUN THE `slack cache-users` SUB-COMMAND.
+- You can send messages to a Slack user by using the `slack send-message <channel|email> "<message>"` command.
 ```
 
 ## Usage
 
 ```bash
 Usage:
-  slack send-message <username> <message> - send a message to a user
+  slack send-message <channel|email> <message> - send a message to a user
 
 Options:
-  -c string
-    	File to cache Slack user emails (default "/var/local/slack/user_emails")
   -t string
     	Slack API token (defaults to SLACK_TOKEN env var) (default "")
 ```
