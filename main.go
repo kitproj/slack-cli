@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
 	"strings"
@@ -49,6 +50,8 @@ func run(ctx context.Context, args []string) error {
 		return fmt.Errorf("SLACK_TOKEN must be set")
 	}
 
+	// disable HTTP/2 support as it causes issues with some proxies
+	http.DefaultTransport.(*http.Transport).ForceAttemptHTTP2 = false
 	api = slack.New(token)
 
 	switch args[0] {
