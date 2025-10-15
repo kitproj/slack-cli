@@ -89,10 +89,6 @@ func cacheUsers(ctx context.Context) error {
 		}
 	}
 
-	if err != nil {
-		return fmt.Errorf("failed to fetch users: %w", err)
-	}
-
 	fmt.Fprintf(os.Stderr, "\n✅ Success! Exported %d email addresses to '%s'\n", count, userEmailsFile)
 
 	return nil
