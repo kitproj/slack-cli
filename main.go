@@ -2,17 +2,15 @@ package main
 
 import (
 	"bufio"
-	"bytes"
 	"context"
-	"encoding/json"
 	"flag"
 	"fmt"
-	"net/http"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
-	"time"
+
+	"github.com/slack-go/slack"
 )
 
 var (
@@ -76,66 +74,23 @@ func cacheUsers(ctx context.Context) error {
 	}
 	defer file.Close()
 
-	cursor := ""
-	pageCount := 0
+	api := slack.New(token)
 
-	for {
-		pageCount++
-		fmt.Printf("Fetching page %d...\n", pageCount)
-
-		url := "https://slack.com/api/users.list?limit=200"
-		if cursor != "" {
-			url += "&cursor=" + cursor
-		}
-
-		req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
-		if err != nil {
-			return fmt.Errorf("failed to create request: %w", err)
-		}
-		req.Header.Set("Authorization", "Bearer "+token)
-
-		resp, err := http.DefaultClient.Do(req)
-		if err != nil {
-			return fmt.Errorf("failed to fetch users: %w", err)
-		}
-		defer resp.Body.Close()
-
-		if resp.StatusCode >= 300 {
-			return fmt.Errorf("failed to fetch users: HTTP %d", resp.StatusCode)
-		}
-
-		var result usersList
-		if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-			return fmt.Errorf("failed to parse Slack response: %w", err)
-		}
-
-		if !result.Ok {
-			errorMsg := result.Error
-			if errorMsg == "" {
-				errorMsg = "unknown error"
-			}
-			return fmt.Errorf("slack API error (page %d): %s", pageCount, errorMsg)
-		}
-
-		for _, member := range result.Members {
-			if !member.Deleted && !member.IsBot && member.Profile.Email != "" {
-				fmt.Fprintf(file, "%s=%s\n", member.Name, member.Profile.Email)
-			}
-		}
-
-		cursor = result.ResponseMetadata.NextCursor
-		if cursor == "" {
-			break
-		}
-
-		time.Sleep(4 * time.Second)
+	users, err := api.GetUsersContext(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to fetch users: %w", err)
 	}
 
-	file.Seek(0, 0)
-	scanner := bufio.NewScanner(file)
 	count := 0
-	for scanner.Scan() {
-		count++
+	for _, user := range users {
+		if !user.Deleted && !user.IsBot && user.Profile.Email != "" {
+			fmt.Fprintf(file, "%s=%s\n", user.Name, user.Profile.Email)
+			count++
+		}
+	}
+
+	if err != nil {
+		return fmt.Errorf("failed to fetch users: %w", err)
 	}
 
 	fmt.Fprintf(os.Stderr, "\n✅ Success! Exported %d email addresses to '%s'\n", count, userEmailsFile)
@@ -165,73 +120,20 @@ func sendMessage(ctx context.Context, username, body string) error {
 		return fmt.Errorf("user '%s' not found in cache, please run 'slack cache-users' first", username)
 	}
 
-	url := fmt.Sprintf("https://slack.com/api/users.lookupByEmail?email=%s", email)
-	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
-	if err != nil {
-		return fmt.Errorf("failed to create request: %w", err)
-	}
-	req.Header.Set("Authorization", "Bearer "+token)
+	api := slack.New(token)
 
-	resp, err := http.DefaultClient.Do(req)
+	user, err := api.GetUserByEmailContext(ctx, email)
 	if err != nil {
 		return fmt.Errorf("failed to lookup user: %w", err)
 	}
-	defer resp.Body.Close()
 
-	if resp.StatusCode >= 300 {
-		return fmt.Errorf("failed to lookup user: HTTP %d", resp.StatusCode)
-	}
-
-	var lookupResult lookupResult
-
-	if err := json.NewDecoder(resp.Body).Decode(&lookupResult); err != nil {
-		return fmt.Errorf("failed to parse Slack response: %w", err)
-	}
-
-	if lookupResult.User.ID == "" {
+	if user == nil {
 		return fmt.Errorf("user '%s' not found or missing email", username)
 	}
 
-	userID := lookupResult.User.ID
-
-	payload := message{
-		Channel: userID,
-		Text:    body,
-	}
-	data, err := json.Marshal(payload)
-	if err != nil {
-		return fmt.Errorf("failed to marshal message: %w", err)
-	}
-
-	req, err = http.NewRequestWithContext(ctx, "POST", "https://slack.com/api/chat.postMessage", bytes.NewReader(data))
-	if err != nil {
-		return fmt.Errorf("failed to create request: %w", err)
-	}
-	req.Header.Set("Authorization", "Bearer "+token)
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err = http.DefaultClient.Do(req)
+	_, _, err = api.PostMessageContext(ctx, user.ID, slack.MsgOptionText(body, false))
 	if err != nil {
 		return fmt.Errorf("failed to send message: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode >= 300 {
-		return fmt.Errorf("failed to send message: HTTP %d", resp.StatusCode)
-	}
-
-	var sendResult sendResult
-
-	if err := json.NewDecoder(resp.Body).Decode(&sendResult); err != nil {
-		return fmt.Errorf("failed to parse Slack response: %w", err)
-	}
-
-	if !sendResult.Ok {
-		errorMsg := sendResult.Error
-		if errorMsg == "" {
-			errorMsg = "unknown error"
-		}
-		return fmt.Errorf("failed to send message: %s", errorMsg)
 	}
 
 	fmt.Printf("Message sent to %s\n", username)
