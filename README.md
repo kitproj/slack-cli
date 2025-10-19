@@ -20,6 +20,7 @@ Add this to your prompt (e.g. `AGENTS.md`):
 
 ```markdown
 - You can send messages to a Slack user by using the `slack send-message <channel|email> "<message>"` command.
+- The message supports Markdown formatting which will be automatically converted to Slack's Mrkdwn format.
 ```
 
 ## Usage

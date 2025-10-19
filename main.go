@@ -79,7 +79,10 @@ func sendMessage(ctx context.Context, identifier, body string) error {
 		channel = identifier
 	}
 
-	if _, _, err := api.PostMessageContext(ctx, channel, slack.MsgOptionText(body, false)); err != nil {
+	// Convert Markdown to Mrkdwn format
+	mrkdwnBody := convertMarkdownToMrkdwn(body)
+
+	if _, _, err := api.PostMessageContext(ctx, channel, slack.MsgOptionText(mrkdwnBody, false)); err != nil {
 		return fmt.Errorf("failed to send message: %w", err)
 	}
 
