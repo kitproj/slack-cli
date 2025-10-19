@@ -65,6 +65,26 @@ func TestConvertMarkdownToMrkdwn(t *testing.T) {
 			markdown: "This is **bold** and ~~strike~~ with a [link](https://example.com)",
 			expected: "This is *bold* and ~strike~ with a <https://example.com|link>",
 		},
+		{
+			name:     "italic with single asterisk",
+			markdown: "This is *italic* text",
+			expected: "This is _italic_ text",
+		},
+		{
+			name:     "code block with complex language specifier",
+			markdown: "```c++\nint main() {}\n```",
+			expected: "```\nint main() {}\n```",
+		},
+		{
+			name:     "code block with c# language",
+			markdown: "```c#\npublic void Main() {}\n```",
+			expected: "```\npublic void Main() {}\n```",
+		},
+		{
+			name:     "code block with hyphenated language",
+			markdown: "```objective-c\n@interface MyClass\n```",
+			expected: "```\n@interface MyClass\n```",
+		},
 	}
 
 	for _, tt := range tests {
