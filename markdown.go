@@ -19,7 +19,7 @@ func convertMarkdownToMrkdwn(markdown string) string {
 	// Convert bold: **text** or __text__ -> placeholder
 	boldPattern := regexp.MustCompile(`\*\*(.+?)\*\*`)
 	text = boldPattern.ReplaceAllStringFunc(text, func(match string) string {
-		content := regexp.MustCompile(`\*\*(.+?)\*\*`).FindStringSubmatch(match)
+		content := boldPattern.FindStringSubmatch(match)
 		if len(content) > 1 {
 			replacement := "*" + content[1] + "*"
 			boldMatches = append(boldMatches, replacement)
@@ -30,7 +30,7 @@ func convertMarkdownToMrkdwn(markdown string) string {
 	
 	boldUnderscorePattern := regexp.MustCompile(`__(.+?)__`)
 	text = boldUnderscorePattern.ReplaceAllStringFunc(text, func(match string) string {
-		content := regexp.MustCompile(`__(.+?)__`).FindStringSubmatch(match)
+		content := boldUnderscorePattern.FindStringSubmatch(match)
 		if len(content) > 1 {
 			replacement := "*" + content[1] + "*"
 			boldMatches = append(boldMatches, replacement)
@@ -52,11 +52,11 @@ func convertMarkdownToMrkdwn(markdown string) string {
 
 	// Convert strikethrough: ~~text~~ -> ~text~
 	strikethroughPattern := regexp.MustCompile(`~~(.+?)~~`)
-	text = strikethroughPattern.ReplaceAllString(text, `~$1~`)
+	text = strikethroughPattern.ReplaceAllString(text, `~${1}~`)
 
 	// Convert links: [text](url) -> <url|text>
 	linkPattern := regexp.MustCompile(`\[([^\]]+)\]\(([^\)]+)\)`)
-	text = linkPattern.ReplaceAllString(text, `<$2|$1>`)
+	text = linkPattern.ReplaceAllString(text, `<${2}|${1}>`)
 
 	// Convert code blocks: ```lang\ncode\n``` -> ```code```
 	// Remove language specifier from code blocks (supports alphanumeric, hyphens, plus, etc.)
