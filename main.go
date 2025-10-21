@@ -20,10 +20,6 @@ const (
 	keyringUser    = "SLACK_TOKEN"
 )
 
-var (
-	api *slack.Client
-)
-
 func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
@@ -52,44 +48,48 @@ func run(ctx context.Context, args []string) error {
 
 	switch args[0] {
 	case "configure":
-		return configure(ctx)
+		return configureToken(ctx)
 	case "send-message":
 		if len(args) < 3 {
 			return fmt.Errorf("usage: slack send-message <channel|email> <message>")
 		}
 		
-		// Get token from env var first, then fall back to keyring
-		token := os.Getenv("SLACK_TOKEN")
-		if token == "" {
-			keyringToken, err := keyring.Get(keyringService, keyringUser)
-			if err == nil && keyringToken != "" {
-				token = keyringToken
-			}
-		}
-
+		token := getToken()
 		if token == "" {
 			return fmt.Errorf("Slack token must be set (use 'slack configure' or set SLACK_TOKEN env var)")
 		}
 
 		// disable HTTP/2 support as it causes issues with some proxies
 		http.DefaultTransport.(*http.Transport).ForceAttemptHTTP2 = false
-		api = slack.New(token)
+		api := slack.New(token)
 		
-		return sendMessage(ctx, args[1], args[2])
+		return sendMessage(ctx, api, args[1], args[2])
 	default:
 		return fmt.Errorf("unknown sub-command: %s", args[0])
 	}
 }
 
-func sendMessage(ctx context.Context, identifier, body string) error {
+func getToken() string {
+	// Get token from env var first, then fall back to keyring
+	if token := os.Getenv("SLACK_TOKEN"); token != "" {
+		return token
+	}
+	
+	keyringToken, err := keyring.Get(keyringService, keyringUser)
+	if err == nil && keyringToken != "" {
+		return keyringToken
+	}
+	
+	return ""
+}
 
+func sendMessage(ctx context.Context, api *slack.Client, identifier, body string) error {
 	var channel string
 	if strings.Contains(identifier, "@") {
 		user, err := api.GetUserByEmailContext(ctx, identifier)
 		if err != nil {
 			return fmt.Errorf("failed to lookup user: %w", err)
 		}
-
 		channel = user.ID
 	} else {
 		channel = identifier
@@ -106,7 +106,7 @@ func sendMessage(ctx context.Context, identifier, body string) error {
 	return nil
 }
 
-func configure(ctx context.Context) error {
+func configureToken(ctx context.Context) error {
 	fmt.Fprintln(os.Stderr, "Enter your Slack API token:")
 	
 	scanner := bufio.NewScanner(os.Stdin)

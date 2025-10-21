@@ -18,7 +18,7 @@ func TestConfigure_EmptyToken(t *testing.T) {
 	w.Close()
 
 	ctx := context.Background()
-	err := configure(ctx)
+	err := configureToken(ctx)
 	
 	if err == nil {
 		t.Error("Expected error for empty token, got nil")
@@ -48,7 +48,7 @@ func TestConfigure_ValidToken(t *testing.T) {
 	os.Stderr = tmpFile
 
 	ctx := context.Background()
-	err := configure(ctx)
+	err := configureToken(ctx)
 	
 	// We expect this to fail in the test environment due to keyring access,
 	// but the token reading logic should work
@@ -68,7 +68,7 @@ func TestConfigure_WhitespaceToken(t *testing.T) {
 	w.Close()
 
 	ctx := context.Background()
-	err := configure(ctx)
+	err := configureToken(ctx)
 	
 	if err == nil {
 		t.Error("Expected error for whitespace-only token, got nil")
