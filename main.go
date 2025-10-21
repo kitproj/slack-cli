@@ -50,33 +50,31 @@ func run(ctx context.Context, args []string) error {
 		return fmt.Errorf("missing sub-command")
 	}
 
-	// Handle configure command first (doesn't need token)
-	if args[0] == "configure" {
-		return configure(ctx)
-	}
-
-	// Get token from keyring first, then fall back to env var
-	token := ""
-	keyringToken, err := keyring.Get(keyringService, keyringUser)
-	if err == nil && keyringToken != "" {
-		token = keyringToken
-	} else {
-		token = os.Getenv("SLACK_TOKEN")
-	}
-
-	if token == "" {
-		return fmt.Errorf("SLACK_TOKEN must be set (use 'slack configure' or set SLACK_TOKEN env var)")
-	}
-
-	// disable HTTP/2 support as it causes issues with some proxies
-	http.DefaultTransport.(*http.Transport).ForceAttemptHTTP2 = false
-	api = slack.New(token)
-
 	switch args[0] {
+	case "configure":
+		return configure(ctx)
 	case "send-message":
 		if len(args) < 3 {
 			return fmt.Errorf("usage: slack send-message <channel|email> <message>")
 		}
+		
+		// Get token from env var first, then fall back to keyring
+		token := os.Getenv("SLACK_TOKEN")
+		if token == "" {
+			keyringToken, err := keyring.Get(keyringService, keyringUser)
+			if err == nil && keyringToken != "" {
+				token = keyringToken
+			}
+		}
+
+		if token == "" {
+			return fmt.Errorf("Slack token must be set (use 'slack configure' or set SLACK_TOKEN env var)")
+		}
+
+		// disable HTTP/2 support as it causes issues with some proxies
+		http.DefaultTransport.(*http.Transport).ForceAttemptHTTP2 = false
+		api = slack.New(token)
+		
 		return sendMessage(ctx, args[1], args[2])
 	default:
 		return fmt.Errorf("unknown sub-command: %s", args[0])
