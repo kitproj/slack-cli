@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"context"
 	"flag"
 	"fmt"
@@ -13,6 +12,7 @@ import (
 
 	"github.com/slack-go/slack"
 	"github.com/zalando/go-keyring"
+	"golang.org/x/term"
 )
 
 const (
@@ -107,17 +107,30 @@ func sendMessage(ctx context.Context, api *slack.Client, identifier, body string
 }
 
 func configureToken(ctx context.Context) error {
-	fmt.Fprintln(os.Stderr, "Enter your Slack API token:")
+	fmt.Fprint(os.Stderr, "Enter your Slack API token: ")
 	
-	scanner := bufio.NewScanner(os.Stdin)
-	if !scanner.Scan() {
-		if err := scanner.Err(); err != nil {
+	var token string
+	
+	// Check if stdin is a terminal
+	if term.IsTerminal(int(os.Stdin.Fd())) {
+		// Read password without echoing to terminal
+		tokenBytes, err := term.ReadPassword(int(os.Stdin.Fd()))
+		fmt.Fprintln(os.Stderr) // Print newline after password input
+		
+		if err != nil {
 			return fmt.Errorf("failed to read token: %w", err)
 		}
-		return fmt.Errorf("no token provided")
+		token = strings.TrimSpace(string(tokenBytes))
+	} else {
+		// If not a terminal (e.g., piped input), read normally
+		var line string
+		if _, err := fmt.Fscanln(os.Stdin, &line); err != nil {
+			return fmt.Errorf("failed to read token: %w", err)
+		}
+		token = strings.TrimSpace(line)
+		fmt.Fprintln(os.Stderr) // Print newline for consistency
 	}
 
-	token := strings.TrimSpace(scanner.Text())
 	if token == "" {
 		return fmt.Errorf("token cannot be empty")
 	}
