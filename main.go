@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	keyringService = "login"
+	keyringService = "slack-cli"
 	keyringUser    = "SLACK_TOKEN"
 )
 
