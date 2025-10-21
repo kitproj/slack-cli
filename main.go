@@ -107,6 +107,8 @@ func sendMessage(ctx context.Context, api *slack.Client, identifier, body string
 }
 
 func configureToken(ctx context.Context) error {
+	fmt.Fprintln(os.Stderr, "To get your Slack API token, visit: https://api.slack.com/apps")
+	fmt.Fprintln(os.Stderr, "Create an app, install it to your workspace, and copy the Bot User OAuth Token")
 	fmt.Fprint(os.Stderr, "Enter your Slack API token: ")
 	
 	var token string
