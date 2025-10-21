@@ -21,15 +21,13 @@ const (
 )
 
 var (
-	token string
-	api   *slack.Client
+	api *slack.Client
 )
 
 func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
 
-	flag.StringVar(&token, "t", os.Getenv("SLACK_TOKEN"), "Slack API token (defaults to SLACK_TOKEN env var)")
 	flag.Usage = func() {
 		w := flag.CommandLine.Output()
 		fmt.Fprintf(w, "Usage:")
@@ -37,8 +35,6 @@ func main() {
 		fmt.Fprintln(w, "  slack configure                                   - configure Slack token (reads from stdin)")
 		fmt.Fprintln(w, "  slack send-message <channel|email> <message>      - send a message to a user")
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, "Options:")
-		flag.PrintDefaults()
 	}
 	flag.Parse()
 
@@ -59,12 +55,13 @@ func run(ctx context.Context, args []string) error {
 		return configure(ctx)
 	}
 
-	// Get token from keyring, flag, or env var (in that order)
-	if token == "" {
-		keyringToken, err := keyring.Get(keyringService, keyringUser)
-		if err == nil && keyringToken != "" {
-			token = keyringToken
-		}
+	// Get token from keyring first, then fall back to env var
+	token := ""
+	keyringToken, err := keyring.Get(keyringService, keyringUser)
+	if err == nil && keyringToken != "" {
+		token = keyringToken
+	} else {
+		token = os.Getenv("SLACK_TOKEN")
 	}
 
 	if token == "" {

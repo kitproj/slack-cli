@@ -93,10 +93,16 @@ func TestRun_MissingSubCommand(t *testing.T) {
 }
 
 func TestRun_UnknownSubCommand(t *testing.T) {
-	// Set a dummy token to get past token check
-	oldToken := token
-	token = "test-token"
-	defer func() { token = oldToken }()
+	// Set SLACK_TOKEN env var to get past token check
+	oldToken := os.Getenv("SLACK_TOKEN")
+	os.Setenv("SLACK_TOKEN", "test-token")
+	defer func() {
+		if oldToken == "" {
+			os.Unsetenv("SLACK_TOKEN")
+		} else {
+			os.Setenv("SLACK_TOKEN", oldToken)
+		}
+	}()
 
 	ctx := context.Background()
 	err := run(ctx, []string{"unknown-command"})
