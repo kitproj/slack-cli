@@ -13,6 +13,22 @@ sudo curl -fsL -o /usr/local/bin/slack https://github.com/kitproj/slack-cli/rele
 sudo chmod +x /usr/local/bin/slack
 ```
 
+## Configuration
+
+For security, the Slack token is stored in your system keyring (login keyring). Configure it once:
+
+```bash
+echo "xoxb-your-slack-token" | slack configure
+```
+
+Alternatively, you can use the `SLACK_TOKEN` environment variable:
+
+```bash
+export SLACK_TOKEN="xoxb-your-slack-token"
+```
+
+**Note:** Using the keyring is more secure in multi-user systems as environment variables are visible in the process list.
+
 
 ## Prompt
 
@@ -27,9 +43,6 @@ Add this to your prompt (e.g. `AGENTS.md`):
 
 ```bash
 Usage:
-  slack send-message <channel|email> <message> - send a message to a user
-
-Options:
-  -t string
-    	Slack API token (defaults to SLACK_TOKEN env var) (default "")
+  slack configure                                   - configure Slack token (reads from stdin)
+  slack send-message <channel|email> <message>      - send a message to a user
 ```
