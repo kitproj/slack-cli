@@ -55,21 +55,24 @@ Usage:
 
 The MCP (Model Context Protocol) server allows AI assistants and other tools to interact with Slack through a standardized JSON-RPC protocol over stdio. This enables seamless integration with AI coding assistants and other automation tools.
 
-Example MCP server configuration:
+**Setup:**
 
-```json
-{
-  "mcpServers": {
-    "slack": {
-      "command": "slack",
-      "args": ["mcp-server"],
-      "env": {
-        "SLACK_TOKEN": "xoxb-your-slack-token"
-      }
-    }
-  }
-}
-```
+1. First, configure your Slack token (stored securely in the system keyring):
+   ```bash
+   echo "xoxb-your-slack-token" | slack configure
+   ```
+
+2. Add the MCP server configuration to your MCP client:
+   ```json
+   {
+     "mcpServers": {
+       "slack": {
+         "command": "slack",
+         "args": ["mcp-server"]
+       }
+     }
+   }
+   ```
 
 The server exposes a `send_message` tool that accepts:
 - `identifier` - Slack channel ID (e.g., 'C1234567890') or user email address (e.g., 'user@example.com')
