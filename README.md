@@ -37,12 +37,39 @@ Add this to your prompt (e.g. `AGENTS.md`):
 ```markdown
 - You can send messages to a Slack user by using the `slack send-message <channel|email> "<message>"` command.
 - The message supports Markdown formatting which will be automatically converted to Slack's Mrkdwn format.
+- For AI assistants supporting MCP (Model Context Protocol), you can use `slack mcp-server` to enable tool-based Slack integration.
 ```
 
 ## Usage
+
+### Direct CLI Usage
 
 ```bash
 Usage:
   slack configure                                   - configure Slack token (reads from stdin)
   slack send-message <channel|email> <message>      - send a message to a user
+  slack mcp-server                                  - start MCP server (Model Context Protocol)
+```
+
+### MCP Server Mode
+
+The MCP (Model Context Protocol) server allows AI assistants and other tools to interact with Slack through a standardized JSON-RPC protocol over stdio. This enables seamless integration with AI coding assistants and other automation tools.
+
+To use the MCP server:
+
+```bash
+slack mcp-server
+```
+
+The server implements the following MCP methods:
+- `initialize` - Initialize the MCP connection
+- `tools/list` - List available tools (returns `send_message` tool)
+- `tools/call` - Call a tool to send Slack messages
+
+Example MCP client interaction:
+
+```json
+{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"client","version":"1.0"}}}
+{"jsonrpc":"2.0","id":2,"method":"tools/list"}
+{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"send_message","arguments":{"identifier":"user@example.com","message":"Hello!"}}}
 ```
