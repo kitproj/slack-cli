@@ -30,6 +30,7 @@ func main() {
 		fmt.Fprintln(w)
 		fmt.Fprintln(w, "  slack configure                                   - configure Slack token (reads from stdin)")
 		fmt.Fprintln(w, "  slack send-message <channel|email> <message>      - send a message to a user")
+		fmt.Fprintln(w, "  slack mcp-server                                  - start MCP server (Model Context Protocol)")
 		fmt.Fprintln(w)
 	}
 	flag.Parse()
@@ -49,6 +50,8 @@ func run(ctx context.Context, args []string) error {
 	switch args[0] {
 	case "configure":
 		return configureToken(ctx)
+	case "mcp-server":
+		return runMCPServer(ctx)
 	case "send-message":
 		if len(args) < 3 {
 			return fmt.Errorf("usage: slack send-message <channel|email> <message>")
