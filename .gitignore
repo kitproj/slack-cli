@@ -12,6 +12,7 @@
 *.out
 
 # Build artifacts
+slack
 slack-cli
 slack_*
 
