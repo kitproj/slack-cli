@@ -30,7 +30,7 @@ func runMCPServer(ctx context.Context) error {
 
 	// Define the send_message tool
 	sendMessageTool := mcp.NewTool("send_message",
-		mcp.WithDescription("Send a message to a Slack channel or user. You can specify either a channel ID or a user's email address. The message supports Markdown formatting which will be automatically converted to Slack's Mrkdwn format. Optionally provide a timestamp to reply to a message in a thread."),
+		mcp.WithDescription("Send a message to a Slack channel or user. You can specify either a channel ID or a user's email address. The message supports Markdown formatting which will be automatically converted to Slack's Mrkdwn format. Optionally provide a thread_ts to reply to a message in a thread."),
 		mcp.WithString("identifier",
 			mcp.Required(),
 			mcp.Description("The Slack channel ID (e.g., 'C1234567890') or user email address (e.g., 'user@example.com')"),
@@ -39,8 +39,8 @@ func runMCPServer(ctx context.Context) error {
 			mcp.Required(),
 			mcp.Description("The message to send. Supports Markdown formatting."),
 		),
-		mcp.WithString("timestamp",
-			mcp.Description("Optional: The timestamp of the message to reply to (e.g., '1234567890.123456'). If provided, the message will be sent as a threaded reply."),
+		mcp.WithString("thread_ts",
+			mcp.Description("Optional: The thread timestamp of the parent message to reply to (e.g., '1234567890.123456'). When provided, the message will be sent as a threaded reply."),
 		),
 	)
 
@@ -56,8 +56,8 @@ func runMCPServer(ctx context.Context) error {
 			return mcp.NewToolResultError(fmt.Sprintf("Missing or invalid 'message' argument: %v", err)), nil
 		}
 
-		// Get optional timestamp parameter
-		timestamp := request.GetString("timestamp", "")
+		// Get optional thread_ts parameter for replying to a thread
+		timestamp := request.GetString("thread_ts", "")
 
 		// Send the message using the sendMessage function
 		err = sendMessage(ctx, api, identifier, message, timestamp)

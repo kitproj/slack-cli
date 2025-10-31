@@ -28,9 +28,9 @@ func main() {
 		w := flag.CommandLine.Output()
 		fmt.Fprintf(w, "Usage:")
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, "  slack configure                                          - configure Slack token (reads from stdin)")
-		fmt.Fprintln(w, "  slack send-message <channel|email> <message> [timestamp] - send a message to a user (optionally as a reply)")
-		fmt.Fprintln(w, "  slack mcp-server                                         - start MCP server (Model Context Protocol)")
+		fmt.Fprintln(w, "  slack configure                                            - configure Slack token (reads from stdin)")
+		fmt.Fprintln(w, "  slack send-message <channel|email> <message> [thread-ts]   - send a message (optionally reply to a thread)")
+		fmt.Fprintln(w, "  slack mcp-server                                           - start MCP server (Model Context Protocol)")
 		fmt.Fprintln(w)
 	}
 	flag.Parse()
@@ -54,7 +54,7 @@ func run(ctx context.Context, args []string) error {
 		return runMCPServer(ctx)
 	case "send-message":
 		if len(args) < 3 {
-			return fmt.Errorf("usage: slack send-message <channel|email> <message> [timestamp]")
+			return fmt.Errorf("usage: slack send-message <channel|email> <message> [thread-ts]")
 		}
 		
 		token := getToken()
@@ -66,7 +66,7 @@ func run(ctx context.Context, args []string) error {
 		http.DefaultTransport.(*http.Transport).ForceAttemptHTTP2 = false
 		api := slack.New(token)
 		
-		// Check if optional timestamp parameter is provided
+		// Check if optional thread-ts parameter is provided for replying to a thread
 		var timestamp string
 		if len(args) >= 4 {
 			timestamp = args[3]

@@ -36,7 +36,7 @@ Add this to your prompt (e.g. `AGENTS.md`):
 
 ```markdown
 - You can send messages to a Slack user by using the `slack send-message <channel|email> "<message>"` command.
-- You can reply to a message in a thread by adding the timestamp as a third parameter: `slack send-message <channel|email> "<message>" <timestamp>`.
+- You can reply to a message in a thread by adding the thread timestamp as a third parameter: `slack send-message <channel|email> "<message>" <thread-ts>`.
 - The message supports Markdown formatting which will be automatically converted to Slack's Mrkdwn format.
 - For AI assistants supporting MCP (Model Context Protocol), you can use `slack mcp-server` to enable tool-based Slack integration.
 ```
@@ -47,9 +47,9 @@ Add this to your prompt (e.g. `AGENTS.md`):
 
 ```bash
 Usage:
-  slack configure                                          - configure Slack token (reads from stdin)
-  slack send-message <channel|email> <message> [timestamp] - send a message to a user (optionally as a reply)
-  slack mcp-server                                         - start MCP server (Model Context Protocol)
+  slack configure                                            - configure Slack token (reads from stdin)
+  slack send-message <channel|email> <message> [thread-ts]   - send a message (optionally reply to a thread)
+  slack mcp-server                                           - start MCP server (Model Context Protocol)
 ```
 
 **Examples:**
@@ -57,7 +57,7 @@ Usage:
 # Send a message
 slack send-message alex_collins@intuit.com "I love this tool! It makes Slack integration so easy."
 
-# Reply to a message in a thread
+# Reply to a message in a thread (thread-ts is the timestamp of the parent message)
 slack send-message alex_collins@intuit.com "Thanks for the feedback!" "1234567890.123456"
 ```
 
@@ -87,7 +87,7 @@ The MCP (Model Context Protocol) server allows AI assistants and other tools to 
 The server exposes the `send_message` tool with the following parameters:
 - `identifier` - Slack channel ID (e.g., 'C1234567890') or user email address (e.g., 'user@example.com')
 - `message` - The message to send (supports Markdown formatting)
-- `timestamp` - Optional: The timestamp of the message to reply to (e.g., '1234567890.123456'). If provided, the message will be sent as a threaded reply.
+- `thread_ts` - Optional: The thread timestamp of the parent message to reply to (e.g., '1234567890.123456'). When provided, the message will be sent as a threaded reply.
 
 **Example usage from an AI assistant:**
 > "Slack alex_collins@intuit.com to say how much you like this tool."
