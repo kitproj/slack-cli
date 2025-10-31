@@ -125,8 +125,8 @@ func sendMessage(ctx context.Context, api *slack.Client, identifier, body, times
 		fmt.Printf("Reply sent to %s (%s) in thread %s\n", identifier, channel, timestamp)
 	} else {
 		fmt.Printf("Message sent to %s (%s)\n", identifier, channel)
+		fmt.Printf("thread-ts: %s\n", respTimestamp)
 	}
-	fmt.Printf("thread-ts: %s\n", respTimestamp)
 	
 	return respTimestamp, nil
 }

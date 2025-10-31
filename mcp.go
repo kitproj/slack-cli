@@ -66,7 +66,7 @@ func runMCPServer(ctx context.Context) error {
 		}
 
 		if timestamp != "" {
-			return mcp.NewToolResultText(fmt.Sprintf("Reply sent successfully to %s in thread %s\nthread-ts: %s", identifier, timestamp, respTimestamp)), nil
+			return mcp.NewToolResultText(fmt.Sprintf("Reply sent successfully to %s in thread %s", identifier, timestamp)), nil
 		}
 		return mcp.NewToolResultText(fmt.Sprintf("Message sent successfully to %s\nthread-ts: %s", identifier, respTimestamp)), nil
 	})
