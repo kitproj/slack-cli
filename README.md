@@ -36,6 +36,7 @@ Add this to your prompt (e.g. `AGENTS.md`):
 
 ```markdown
 - You can send messages to a Slack user by using the `slack send-message <channel|email> "<message>"` command.
+- You can reply to a message in a thread by adding the thread timestamp as a third parameter: `slack send-message <channel|email> "<message>" <thread-ts>`.
 - The message supports Markdown formatting which will be automatically converted to Slack's Mrkdwn format.
 - For AI assistants supporting MCP (Model Context Protocol), you can use `slack mcp-server` to enable tool-based Slack integration.
 ```
@@ -46,15 +47,26 @@ Add this to your prompt (e.g. `AGENTS.md`):
 
 ```bash
 Usage:
-  slack configure                                   - configure Slack token (reads from stdin)
-  slack send-message <channel|email> <message>      - send a message to a user
-  slack mcp-server                                  - start MCP server (Model Context Protocol)
+  slack configure                                            - configure Slack token (reads from stdin)
+  slack send-message <channel|email> <message> [thread-ts]   - send a message (optionally reply to a thread)
+  slack mcp-server                                           - start MCP server (Model Context Protocol)
 ```
 
-**Example:**
+**Examples:**
 ```bash
+# Send a message (prints thread-ts for starting a thread)
 slack send-message alex_collins@intuit.com "I love this tool! It makes Slack integration so easy."
+# Output:
+# Message sent to alex_collins@intuit.com (U12345678)
+# thread-ts: 1234567890.123456
+
+# Reply to a message in a thread (use the thread-ts from the previous message)
+slack send-message alex_collins@intuit.com "Thanks for the feedback!" "1234567890.123456"
+# Output:
+# Reply sent to alex_collins@intuit.com (U12345678) in thread 1234567890.123456
 ```
+
+The `thread-ts` is only printed when sending a new message (not when replying to a thread), allowing you to use it to start a threaded conversation.
 
 ### MCP Server Mode
 
@@ -79,9 +91,11 @@ The MCP (Model Context Protocol) server allows AI assistants and other tools to 
    }
    ```
 
-The server exposes a `send_message` tool that accepts:
+The server exposes the `send_message` tool with the following parameters:
 - `identifier` - Slack channel ID (e.g., 'C1234567890') or user email address (e.g., 'user@example.com')
 - `message` - The message to send (supports Markdown formatting)
+- `thread_ts` - Optional: The thread timestamp of the parent message to reply to (e.g., '1234567890.123456'). When provided, the message will be sent as a threaded reply.
 
 **Example usage from an AI assistant:**
 > "Slack alex_collins@intuit.com to say how much you like this tool."
+> "Reply to that Slack message with a thumbs up emoji."
