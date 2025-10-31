@@ -28,11 +28,11 @@ func TestConfigure_WhitespaceToken(t *testing.T) {
 func TestRun_MissingSubCommand(t *testing.T) {
 	ctx := context.Background()
 	err := run(ctx, []string{})
-	
+
 	if err == nil {
 		t.Error("Expected error for missing sub-command, got nil")
 	}
-	
+
 	if !strings.Contains(err.Error(), "missing sub-command") {
 		t.Errorf("Expected 'missing sub-command' error, got: %v", err)
 	}
@@ -52,11 +52,11 @@ func TestRun_UnknownSubCommand(t *testing.T) {
 
 	ctx := context.Background()
 	err := run(ctx, []string{"unknown-command"})
-	
+
 	if err == nil {
 		t.Error("Expected error for unknown sub-command, got nil")
 	}
-	
+
 	if !strings.Contains(err.Error(), "unknown sub-command") {
 		t.Errorf("Expected 'unknown sub-command' error, got: %v", err)
 	}
@@ -83,7 +83,7 @@ func TestRun_SendMessageMissingArgs(t *testing.T) {
 	}()
 
 	ctx := context.Background()
-	
+
 	// Test with no arguments
 	err := run(ctx, []string{"send-message"})
 	if err == nil {
@@ -92,7 +92,7 @@ func TestRun_SendMessageMissingArgs(t *testing.T) {
 	if !strings.Contains(err.Error(), "usage:") {
 		t.Errorf("Expected usage error, got: %v", err)
 	}
-	
+
 	// Test with only channel
 	err = run(ctx, []string{"send-message", "C1234567890"})
 	if err == nil {
@@ -115,11 +115,11 @@ func TestRun_SendMessageMissingToken(t *testing.T) {
 
 	ctx := context.Background()
 	err := run(ctx, []string{"send-message", "C1234567890", "test message"})
-	
+
 	if err == nil {
 		t.Error("Expected error for missing token, got nil")
 	}
-	
+
 	if !strings.Contains(err.Error(), "Slack token must be set") {
 		t.Errorf("Expected 'Slack token must be set' error, got: %v", err)
 	}

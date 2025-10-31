@@ -56,7 +56,7 @@ func run(ctx context.Context, args []string) error {
 		if len(args) < 3 {
 			return fmt.Errorf("usage: slack send-message <channel|email> <message> [thread-ts]")
 		}
-		
+
 		token := getToken()
 		if token == "" {
 			return fmt.Errorf("Slack token must be set (use 'slack configure' or set SLACK_TOKEN env var)")
@@ -65,13 +65,13 @@ func run(ctx context.Context, args []string) error {
 		// disable HTTP/2 support as it causes issues with some proxies
 		http.DefaultTransport.(*http.Transport).ForceAttemptHTTP2 = false
 		api := slack.New(token)
-		
+
 		// Check if optional thread-ts parameter is provided for replying to a thread
 		var timestamp string
 		if len(args) >= 4 {
 			timestamp = args[3]
 		}
-		
+
 		_, err := sendMessage(ctx, api, args[1], args[2], timestamp)
 		return err
 	default:
@@ -84,12 +84,12 @@ func getToken() string {
 	if token := os.Getenv("SLACK_TOKEN"); token != "" {
 		return token
 	}
-	
+
 	keyringToken, err := keyring.Get(keyringService, keyringUser)
 	if err == nil && keyringToken != "" {
 		return keyringToken
 	}
-	
+
 	return ""
 }
 
@@ -110,7 +110,7 @@ func sendMessage(ctx context.Context, api *slack.Client, identifier, body, times
 
 	// Build message options
 	options := []slack.MsgOption{slack.MsgOptionText(mrkdwnBody, false)}
-	
+
 	// If timestamp is provided, add it to create a threaded reply
 	if timestamp != "" {
 		options = append(options, slack.MsgOptionTS(timestamp))
@@ -127,7 +127,7 @@ func sendMessage(ctx context.Context, api *slack.Client, identifier, body, times
 		fmt.Printf("Message sent to %s (%s)\n", identifier, channel)
 		fmt.Printf("thread-ts: %s\n", respTimestamp)
 	}
-	
+
 	return respTimestamp, nil
 }
 
@@ -135,15 +135,15 @@ func configureToken(ctx context.Context) error {
 	fmt.Fprintln(os.Stderr, "To get your Slack API token, visit: https://api.slack.com/apps")
 	fmt.Fprintln(os.Stderr, "Create an app, install it to your workspace, and copy the Bot User OAuth Token")
 	fmt.Fprint(os.Stderr, "Enter your Slack API token: ")
-	
+
 	var token string
-	
+
 	// Check if stdin is a terminal
 	if term.IsTerminal(int(os.Stdin.Fd())) {
 		// Read password without echoing to terminal
 		tokenBytes, err := term.ReadPassword(int(os.Stdin.Fd()))
 		fmt.Fprintln(os.Stderr) // Print newline after password input
-		
+
 		if err != nil {
 			return fmt.Errorf("failed to read token: %w", err)
 		}

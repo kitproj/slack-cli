@@ -12,10 +12,10 @@ func convertMarkdownToMrkdwn(markdown string) string {
 
 	// Placeholder to protect already-converted bold text
 	const boldPlaceholder = "\x00BOLD\x00"
-	
+
 	// Store bold conversions with placeholders
 	boldMatches := []string{}
-	
+
 	// Convert bold: **text** or __text__ -> placeholder
 	boldPattern := regexp.MustCompile(`\*\*(.+?)\*\*`)
 	text = boldPattern.ReplaceAllStringFunc(text, func(match string) string {
@@ -27,7 +27,7 @@ func convertMarkdownToMrkdwn(markdown string) string {
 		}
 		return match
 	})
-	
+
 	boldUnderscorePattern := regexp.MustCompile(`__(.+?)__`)
 	text = boldUnderscorePattern.ReplaceAllStringFunc(text, func(match string) string {
 		content := boldUnderscorePattern.FindStringSubmatch(match)
