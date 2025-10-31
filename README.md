@@ -36,6 +36,7 @@ Add this to your prompt (e.g. `AGENTS.md`):
 
 ```markdown
 - You can send messages to a Slack user by using the `slack send-message <channel|email> "<message>"` command.
+- You can reply to a message in a thread by using the `slack reply-message <channel|email> <timestamp> "<message>"` command.
 - The message supports Markdown formatting which will be automatically converted to Slack's Mrkdwn format.
 - For AI assistants supporting MCP (Model Context Protocol), you can use `slack mcp-server` to enable tool-based Slack integration.
 ```
@@ -46,14 +47,19 @@ Add this to your prompt (e.g. `AGENTS.md`):
 
 ```bash
 Usage:
-  slack configure                                   - configure Slack token (reads from stdin)
-  slack send-message <channel|email> <message>      - send a message to a user
-  slack mcp-server                                  - start MCP server (Model Context Protocol)
+  slack configure                                          - configure Slack token (reads from stdin)
+  slack send-message <channel|email> <message>             - send a message to a user
+  slack reply-message <channel|email> <timestamp> <message> - reply to a message in a thread
+  slack mcp-server                                         - start MCP server (Model Context Protocol)
 ```
 
-**Example:**
+**Examples:**
 ```bash
+# Send a message
 slack send-message alex_collins@intuit.com "I love this tool! It makes Slack integration so easy."
+
+# Reply to a message in a thread
+slack reply-message alex_collins@intuit.com "1234567890.123456" "Thanks for the feedback!"
 ```
 
 ### MCP Server Mode
@@ -79,9 +85,17 @@ The MCP (Model Context Protocol) server allows AI assistants and other tools to 
    }
    ```
 
-The server exposes a `send_message` tool that accepts:
-- `identifier` - Slack channel ID (e.g., 'C1234567890') or user email address (e.g., 'user@example.com')
-- `message` - The message to send (supports Markdown formatting)
+The server exposes two tools:
+
+1. `send_message` - Send a new message
+   - `identifier` - Slack channel ID (e.g., 'C1234567890') or user email address (e.g., 'user@example.com')
+   - `message` - The message to send (supports Markdown formatting)
+
+2. `reply_message` - Reply to a message in a thread
+   - `identifier` - Slack channel ID (e.g., 'C1234567890') or user email address (e.g., 'user@example.com')
+   - `timestamp` - The timestamp of the message to reply to (e.g., '1234567890.123456')
+   - `message` - The reply message to send (supports Markdown formatting)
 
 **Example usage from an AI assistant:**
 > "Slack alex_collins@intuit.com to say how much you like this tool."
+> "Reply to that Slack message with a thumbs up emoji."

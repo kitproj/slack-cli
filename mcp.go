@@ -62,6 +62,49 @@ func runMCPServer(ctx context.Context) error {
 		return mcp.NewToolResultText(fmt.Sprintf("Message sent successfully to %s", identifier)), nil
 	})
 
+	// Define the reply_message tool
+	replyMessageTool := mcp.NewTool("reply_message",
+		mcp.WithDescription("Reply to a message in a Slack thread. You can specify either a channel ID or a user's email address. The message supports Markdown formatting which will be automatically converted to Slack's Mrkdwn format."),
+		mcp.WithString("identifier",
+			mcp.Required(),
+			mcp.Description("The Slack channel ID (e.g., 'C1234567890') or user email address (e.g., 'user@example.com')"),
+		),
+		mcp.WithString("timestamp",
+			mcp.Required(),
+			mcp.Description("The timestamp of the message to reply to (e.g., '1234567890.123456')"),
+		),
+		mcp.WithString("message",
+			mcp.Required(),
+			mcp.Description("The reply message to send. Supports Markdown formatting."),
+		),
+	)
+
+	// Add the reply tool handler
+	s.AddTool(replyMessageTool, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		identifier, err := request.RequireString("identifier")
+		if err != nil {
+			return mcp.NewToolResultError(fmt.Sprintf("Missing or invalid 'identifier' argument: %v", err)), nil
+		}
+
+		timestamp, err := request.RequireString("timestamp")
+		if err != nil {
+			return mcp.NewToolResultError(fmt.Sprintf("Missing or invalid 'timestamp' argument: %v", err)), nil
+		}
+
+		message, err := request.RequireString("message")
+		if err != nil {
+			return mcp.NewToolResultError(fmt.Sprintf("Missing or invalid 'message' argument: %v", err)), nil
+		}
+
+		// Send the reply using the replyMessage function
+		err = replyMessage(ctx, api, identifier, timestamp, message)
+		if err != nil {
+			return mcp.NewToolResultError(fmt.Sprintf("Error: %v", err)), nil
+		}
+
+		return mcp.NewToolResultText(fmt.Sprintf("Reply sent successfully to %s in thread %s", identifier, timestamp)), nil
+	})
+
 	// Start the stdio server
 	return server.ServeStdio(s)
 }

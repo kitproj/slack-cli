@@ -28,9 +28,10 @@ func main() {
 		w := flag.CommandLine.Output()
 		fmt.Fprintf(w, "Usage:")
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, "  slack configure                                   - configure Slack token (reads from stdin)")
-		fmt.Fprintln(w, "  slack send-message <channel|email> <message>      - send a message to a user")
-		fmt.Fprintln(w, "  slack mcp-server                                  - start MCP server (Model Context Protocol)")
+		fmt.Fprintln(w, "  slack configure                                          - configure Slack token (reads from stdin)")
+		fmt.Fprintln(w, "  slack send-message <channel|email> <message>             - send a message to a user")
+		fmt.Fprintln(w, "  slack reply-message <channel|email> <timestamp> <message> - reply to a message in a thread")
+		fmt.Fprintln(w, "  slack mcp-server                                         - start MCP server (Model Context Protocol)")
 		fmt.Fprintln(w)
 	}
 	flag.Parse()
@@ -67,6 +68,21 @@ func run(ctx context.Context, args []string) error {
 		api := slack.New(token)
 		
 		return sendMessage(ctx, api, args[1], args[2])
+	case "reply-message":
+		if len(args) < 4 {
+			return fmt.Errorf("usage: slack reply-message <channel|email> <timestamp> <message>")
+		}
+		
+		token := getToken()
+		if token == "" {
+			return fmt.Errorf("Slack token must be set (use 'slack configure' or set SLACK_TOKEN env var)")
+		}
+
+		// disable HTTP/2 support as it causes issues with some proxies
+		http.DefaultTransport.(*http.Transport).ForceAttemptHTTP2 = false
+		api := slack.New(token)
+		
+		return replyMessage(ctx, api, args[1], args[2], args[3])
 	default:
 		return fmt.Errorf("unknown sub-command: %s", args[0])
 	}
@@ -106,6 +122,32 @@ func sendMessage(ctx context.Context, api *slack.Client, identifier, body string
 	}
 
 	fmt.Printf("Message sent to %s (%s)\n", identifier, channel)
+	return nil
+}
+
+func replyMessage(ctx context.Context, api *slack.Client, identifier, timestamp, body string) error {
+	var channel string
+	if strings.Contains(identifier, "@") {
+		user, err := api.GetUserByEmailContext(ctx, identifier)
+		if err != nil {
+			return fmt.Errorf("failed to lookup user: %w", err)
+		}
+		channel = user.ID
+	} else {
+		channel = identifier
+	}
+
+	// Convert Markdown to Mrkdwn format
+	mrkdwnBody := convertMarkdownToMrkdwn(body)
+
+	// Use MsgOptionTS to specify the thread timestamp for replying
+	if _, _, err := api.PostMessageContext(ctx, channel, 
+		slack.MsgOptionText(mrkdwnBody, false),
+		slack.MsgOptionTS(timestamp)); err != nil {
+		return fmt.Errorf("failed to send reply: %w", err)
+	}
+
+	fmt.Printf("Reply sent to %s (%s) in thread %s\n", identifier, channel, timestamp)
 	return nil
 }
 

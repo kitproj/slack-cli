@@ -69,3 +69,67 @@ func TestConvertMarkdownToMrkdwn_Integration(t *testing.T) {
 		t.Errorf("Expected '*bold*', got '%s'", result)
 	}
 }
+
+func TestRun_ReplyMessageMissingArgs(t *testing.T) {
+	// Set SLACK_TOKEN env var to get past token check
+	oldToken := os.Getenv("SLACK_TOKEN")
+	os.Setenv("SLACK_TOKEN", "test-token")
+	defer func() {
+		if oldToken == "" {
+			os.Unsetenv("SLACK_TOKEN")
+		} else {
+			os.Setenv("SLACK_TOKEN", oldToken)
+		}
+	}()
+
+	ctx := context.Background()
+	
+	// Test with no arguments
+	err := run(ctx, []string{"reply-message"})
+	if err == nil {
+		t.Error("Expected error for missing arguments, got nil")
+	}
+	if !strings.Contains(err.Error(), "usage:") {
+		t.Errorf("Expected usage error, got: %v", err)
+	}
+	
+	// Test with only channel
+	err = run(ctx, []string{"reply-message", "C1234567890"})
+	if err == nil {
+		t.Error("Expected error for missing arguments, got nil")
+	}
+	if !strings.Contains(err.Error(), "usage:") {
+		t.Errorf("Expected usage error, got: %v", err)
+	}
+	
+	// Test with channel and timestamp but no message
+	err = run(ctx, []string{"reply-message", "C1234567890", "1234567890.123456"})
+	if err == nil {
+		t.Error("Expected error for missing arguments, got nil")
+	}
+	if !strings.Contains(err.Error(), "usage:") {
+		t.Errorf("Expected usage error, got: %v", err)
+	}
+}
+
+func TestRun_ReplyMessageMissingToken(t *testing.T) {
+	// Ensure SLACK_TOKEN env var is not set
+	oldToken := os.Getenv("SLACK_TOKEN")
+	os.Unsetenv("SLACK_TOKEN")
+	defer func() {
+		if oldToken != "" {
+			os.Setenv("SLACK_TOKEN", oldToken)
+		}
+	}()
+
+	ctx := context.Background()
+	err := run(ctx, []string{"reply-message", "C1234567890", "1234567890.123456", "test message"})
+	
+	if err == nil {
+		t.Error("Expected error for missing token, got nil")
+	}
+	
+	if !strings.Contains(err.Error(), "Slack token must be set") {
+		t.Errorf("Expected 'Slack token must be set' error, got: %v", err)
+	}
+}
