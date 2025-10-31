@@ -1,6 +1,6 @@
 # Slack CLI & MCP Server
 
-A Slack CLI and MCP server that allows you to send Slack messages. Inspired by the GitHub CLI, it aims to provide a simple and efficient way for humans and AI to interact with Slack from the command line or via MPC.
+A Slack CLI and MCP server that allows you to send Slack messages. Inspired by the GitHub CLI, it aims to provide a simple and efficient way for humans and AI to interact with Slack from the command line or via MCP.
 
 Like `jq`, it is packaged in a tiny (10Mb) binary, without the need to install a runtime such as Node.js or Python, and securely stores your secret in the key-ring, rather than in plain-text.
 
