@@ -28,9 +28,9 @@ func main() {
 		w := flag.CommandLine.Output()
 		fmt.Fprintf(w, "Usage:")
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, "  slack configure                                   - configure Slack token (reads from stdin)")
-		fmt.Fprintln(w, "  slack send-message <channel|email> <message>      - send a message to a user")
-		fmt.Fprintln(w, "  slack mcp-server                                  - start MCP server (Model Context Protocol)")
+		fmt.Fprintln(w, "  slack configure                                            - configure Slack token (reads from stdin)")
+		fmt.Fprintln(w, "  slack send-message <channel|email> <message> [thread-ts]   - send a message (optionally reply to a thread)")
+		fmt.Fprintln(w, "  slack mcp-server                                           - start MCP server (Model Context Protocol)")
 		fmt.Fprintln(w)
 	}
 	flag.Parse()
@@ -54,7 +54,7 @@ func run(ctx context.Context, args []string) error {
 		return runMCPServer(ctx)
 	case "send-message":
 		if len(args) < 3 {
-			return fmt.Errorf("usage: slack send-message <channel|email> <message>")
+			return fmt.Errorf("usage: slack send-message <channel|email> <message> [thread-ts]")
 		}
 		
 		token := getToken()
@@ -66,7 +66,14 @@ func run(ctx context.Context, args []string) error {
 		http.DefaultTransport.(*http.Transport).ForceAttemptHTTP2 = false
 		api := slack.New(token)
 		
-		return sendMessage(ctx, api, args[1], args[2])
+		// Check if optional thread-ts parameter is provided for replying to a thread
+		var timestamp string
+		if len(args) >= 4 {
+			timestamp = args[3]
+		}
+		
+		_, err := sendMessage(ctx, api, args[1], args[2], timestamp)
+		return err
 	default:
 		return fmt.Errorf("unknown sub-command: %s", args[0])
 	}
@@ -86,12 +93,12 @@ func getToken() string {
 	return ""
 }
 
-func sendMessage(ctx context.Context, api *slack.Client, identifier, body string) error {
+func sendMessage(ctx context.Context, api *slack.Client, identifier, body, timestamp string) (string, error) {
 	var channel string
 	if strings.Contains(identifier, "@") {
 		user, err := api.GetUserByEmailContext(ctx, identifier)
 		if err != nil {
-			return fmt.Errorf("failed to lookup user: %w", err)
+			return "", fmt.Errorf("failed to lookup user: %w", err)
 		}
 		channel = user.ID
 	} else {
@@ -101,12 +108,27 @@ func sendMessage(ctx context.Context, api *slack.Client, identifier, body string
 	// Convert Markdown to Mrkdwn format
 	mrkdwnBody := convertMarkdownToMrkdwn(body)
 
-	if _, _, err := api.PostMessageContext(ctx, channel, slack.MsgOptionText(mrkdwnBody, false)); err != nil {
-		return fmt.Errorf("failed to send message: %w", err)
+	// Build message options
+	options := []slack.MsgOption{slack.MsgOptionText(mrkdwnBody, false)}
+	
+	// If timestamp is provided, add it to create a threaded reply
+	if timestamp != "" {
+		options = append(options, slack.MsgOptionTS(timestamp))
 	}
 
-	fmt.Printf("Message sent to %s (%s)\n", identifier, channel)
-	return nil
+	_, respTimestamp, err := api.PostMessageContext(ctx, channel, options...)
+	if err != nil {
+		return "", fmt.Errorf("failed to send message: %w", err)
+	}
+
+	if timestamp != "" {
+		fmt.Printf("Reply sent to %s (%s) in thread %s\n", identifier, channel, timestamp)
+	} else {
+		fmt.Printf("Message sent to %s (%s)\n", identifier, channel)
+		fmt.Printf("thread-ts: %s\n", respTimestamp)
+	}
+	
+	return respTimestamp, nil
 }
 
 func configureToken(ctx context.Context) error {
