@@ -91,7 +91,7 @@ slack send-message alex_collins@intuit.com "**Bold**, *italic*, ~~strikethrough~
 Messages automatically convert Markdown to Slack's Mrkdwn format. Supported features:
 
 - **Bold**: `**text**` or `__text__` → `*text*`
-- **Italic**: `*text*` → `_text_`
+- **Italic**: `*text*` or `_text_` → `_text_` (single underscores already in Mrkdwn format)
 - **Strikethrough**: `~~text~~` → `~text~`
 - **Inline code**: `` `code` `` (unchanged)
 - **Links**: `[text](url)` → `<url|text>`
