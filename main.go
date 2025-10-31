@@ -141,9 +141,7 @@ func replyMessage(ctx context.Context, api *slack.Client, identifier, timestamp,
 	mrkdwnBody := convertMarkdownToMrkdwn(body)
 
 	// Use MsgOptionTS to specify the thread timestamp for replying
-	if _, _, err := api.PostMessageContext(ctx, channel, 
-		slack.MsgOptionText(mrkdwnBody, false),
-		slack.MsgOptionTS(timestamp)); err != nil {
+	if _, _, err := api.PostMessageContext(ctx, channel, slack.MsgOptionText(mrkdwnBody, false), slack.MsgOptionTS(timestamp)); err != nil {
 		return fmt.Errorf("failed to send reply: %w", err)
 	}
 
