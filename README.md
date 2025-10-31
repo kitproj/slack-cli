@@ -1,4 +1,4 @@
-# Slack CLI & MPC Server
+# Slack CLI & MCP Server
 
 A Slack CLI and MCP server that allows you to send Slack messages. Inspired by the GitHub CLI, it aims to provide a simple and efficient way for humans and AI to interact with Slack from the command line or via MPC.
 
