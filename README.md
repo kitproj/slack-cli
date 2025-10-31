@@ -11,7 +11,7 @@ It's aimed at coding agents with a very simple interface, and is not intended to
 Download the binary for your platform from the release page:
 
 ```bash
-sudo curl -fsL -o /usr/local/bin/slack https://github.com/kitproj/slack-cli/releases/download/v0.0.10/slack_v0.0.10_linux_arm64
+sudo curl -fsL -o /usr/local/bin/slack https://github.com/kitproj/slack-cli/releases/download/v0.0.11/slack_v0.0.11_linux_arm64
 sudo chmod +x /usr/local/bin/slack
 ```
 
