@@ -72,7 +72,8 @@ func run(ctx context.Context, args []string) error {
 			timestamp = args[3]
 		}
 		
-		return sendMessage(ctx, api, args[1], args[2], timestamp)
+		_, err := sendMessage(ctx, api, args[1], args[2], timestamp)
+		return err
 	default:
 		return fmt.Errorf("unknown sub-command: %s", args[0])
 	}
@@ -92,12 +93,12 @@ func getToken() string {
 	return ""
 }
 
-func sendMessage(ctx context.Context, api *slack.Client, identifier, body, timestamp string) error {
+func sendMessage(ctx context.Context, api *slack.Client, identifier, body, timestamp string) (string, error) {
 	var channel string
 	if strings.Contains(identifier, "@") {
 		user, err := api.GetUserByEmailContext(ctx, identifier)
 		if err != nil {
-			return fmt.Errorf("failed to lookup user: %w", err)
+			return "", fmt.Errorf("failed to lookup user: %w", err)
 		}
 		channel = user.ID
 	} else {
@@ -115,8 +116,9 @@ func sendMessage(ctx context.Context, api *slack.Client, identifier, body, times
 		options = append(options, slack.MsgOptionTS(timestamp))
 	}
 
-	if _, _, err := api.PostMessageContext(ctx, channel, options...); err != nil {
-		return fmt.Errorf("failed to send message: %w", err)
+	_, respTimestamp, err := api.PostMessageContext(ctx, channel, options...)
+	if err != nil {
+		return "", fmt.Errorf("failed to send message: %w", err)
 	}
 
 	if timestamp != "" {
@@ -124,7 +126,9 @@ func sendMessage(ctx context.Context, api *slack.Client, identifier, body, times
 	} else {
 		fmt.Printf("Message sent to %s (%s)\n", identifier, channel)
 	}
-	return nil
+	fmt.Printf("thread-ts: %s\n", respTimestamp)
+	
+	return respTimestamp, nil
 }
 
 func configureToken(ctx context.Context) error {

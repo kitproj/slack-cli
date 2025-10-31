@@ -60,15 +60,15 @@ func runMCPServer(ctx context.Context) error {
 		timestamp := request.GetString("thread_ts", "")
 
 		// Send the message using the sendMessage function
-		err = sendMessage(ctx, api, identifier, message, timestamp)
+		respTimestamp, err := sendMessage(ctx, api, identifier, message, timestamp)
 		if err != nil {
 			return mcp.NewToolResultError(fmt.Sprintf("Error: %v", err)), nil
 		}
 
 		if timestamp != "" {
-			return mcp.NewToolResultText(fmt.Sprintf("Reply sent successfully to %s in thread %s", identifier, timestamp)), nil
+			return mcp.NewToolResultText(fmt.Sprintf("Reply sent successfully to %s in thread %s\nthread-ts: %s", identifier, timestamp, respTimestamp)), nil
 		}
-		return mcp.NewToolResultText(fmt.Sprintf("Message sent successfully to %s", identifier)), nil
+		return mcp.NewToolResultText(fmt.Sprintf("Message sent successfully to %s\nthread-ts: %s", identifier, respTimestamp)), nil
 	})
 
 	// Start the stdio server

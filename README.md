@@ -56,10 +56,18 @@ Usage:
 ```bash
 # Send a message
 slack send-message alex_collins@intuit.com "I love this tool! It makes Slack integration so easy."
+# Output includes:
+# Message sent to alex_collins@intuit.com (U12345678)
+# thread-ts: 1234567890.123456
 
-# Reply to a message in a thread (thread-ts is the timestamp of the parent message)
+# Reply to a message in a thread (use the thread-ts from the previous message)
 slack send-message alex_collins@intuit.com "Thanks for the feedback!" "1234567890.123456"
+# Output includes:
+# Reply sent to alex_collins@intuit.com (U12345678) in thread 1234567890.123456
+# thread-ts: 1234567890.654321
 ```
+
+The `thread-ts` is printed after each message is sent, allowing you to use it to continue the conversation in a thread.
 
 ### MCP Server Mode
 
