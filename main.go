@@ -29,8 +29,7 @@ func main() {
 		fmt.Fprintf(w, "Usage:")
 		fmt.Fprintln(w)
 		fmt.Fprintln(w, "  slack configure                                          - configure Slack token (reads from stdin)")
-		fmt.Fprintln(w, "  slack send-message <channel|email> <message>             - send a message to a user")
-		fmt.Fprintln(w, "  slack reply-message <channel|email> <timestamp> <message> - reply to a message in a thread")
+		fmt.Fprintln(w, "  slack send-message <channel|email> <message> [timestamp] - send a message to a user (optionally as a reply)")
 		fmt.Fprintln(w, "  slack mcp-server                                         - start MCP server (Model Context Protocol)")
 		fmt.Fprintln(w)
 	}
@@ -55,7 +54,7 @@ func run(ctx context.Context, args []string) error {
 		return runMCPServer(ctx)
 	case "send-message":
 		if len(args) < 3 {
-			return fmt.Errorf("usage: slack send-message <channel|email> <message>")
+			return fmt.Errorf("usage: slack send-message <channel|email> <message> [timestamp]")
 		}
 		
 		token := getToken()
@@ -67,22 +66,13 @@ func run(ctx context.Context, args []string) error {
 		http.DefaultTransport.(*http.Transport).ForceAttemptHTTP2 = false
 		api := slack.New(token)
 		
-		return sendMessage(ctx, api, args[1], args[2])
-	case "reply-message":
-		if len(args) < 4 {
-			return fmt.Errorf("usage: slack reply-message <channel|email> <timestamp> <message>")
+		// Check if optional timestamp parameter is provided
+		var timestamp string
+		if len(args) >= 4 {
+			timestamp = args[3]
 		}
 		
-		token := getToken()
-		if token == "" {
-			return fmt.Errorf("Slack token must be set (use 'slack configure' or set SLACK_TOKEN env var)")
-		}
-
-		// disable HTTP/2 support as it causes issues with some proxies
-		http.DefaultTransport.(*http.Transport).ForceAttemptHTTP2 = false
-		api := slack.New(token)
-		
-		return replyMessage(ctx, api, args[1], args[2], args[3])
+		return sendMessage(ctx, api, args[1], args[2], timestamp)
 	default:
 		return fmt.Errorf("unknown sub-command: %s", args[0])
 	}
@@ -102,7 +92,7 @@ func getToken() string {
 	return ""
 }
 
-func sendMessage(ctx context.Context, api *slack.Client, identifier, body string) error {
+func sendMessage(ctx context.Context, api *slack.Client, identifier, body, timestamp string) error {
 	var channel string
 	if strings.Contains(identifier, "@") {
 		user, err := api.GetUserByEmailContext(ctx, identifier)
@@ -117,35 +107,23 @@ func sendMessage(ctx context.Context, api *slack.Client, identifier, body string
 	// Convert Markdown to Mrkdwn format
 	mrkdwnBody := convertMarkdownToMrkdwn(body)
 
-	if _, _, err := api.PostMessageContext(ctx, channel, slack.MsgOptionText(mrkdwnBody, false)); err != nil {
+	// Build message options
+	options := []slack.MsgOption{slack.MsgOptionText(mrkdwnBody, false)}
+	
+	// If timestamp is provided, add it to create a threaded reply
+	if timestamp != "" {
+		options = append(options, slack.MsgOptionTS(timestamp))
+	}
+
+	if _, _, err := api.PostMessageContext(ctx, channel, options...); err != nil {
 		return fmt.Errorf("failed to send message: %w", err)
 	}
 
-	fmt.Printf("Message sent to %s (%s)\n", identifier, channel)
-	return nil
-}
-
-func replyMessage(ctx context.Context, api *slack.Client, identifier, timestamp, body string) error {
-	var channel string
-	if strings.Contains(identifier, "@") {
-		user, err := api.GetUserByEmailContext(ctx, identifier)
-		if err != nil {
-			return fmt.Errorf("failed to lookup user: %w", err)
-		}
-		channel = user.ID
+	if timestamp != "" {
+		fmt.Printf("Reply sent to %s (%s) in thread %s\n", identifier, channel, timestamp)
 	} else {
-		channel = identifier
+		fmt.Printf("Message sent to %s (%s)\n", identifier, channel)
 	}
-
-	// Convert Markdown to Mrkdwn format
-	mrkdwnBody := convertMarkdownToMrkdwn(body)
-
-	// Use MsgOptionTS to specify the thread timestamp for replying
-	if _, _, err := api.PostMessageContext(ctx, channel, slack.MsgOptionText(mrkdwnBody, false), slack.MsgOptionTS(timestamp)); err != nil {
-		return fmt.Errorf("failed to send reply: %w", err)
-	}
-
-	fmt.Printf("Reply sent to %s (%s) in thread %s\n", identifier, channel, timestamp)
 	return nil
 }
 
