@@ -8,10 +8,33 @@ It's aimed at coding agents with a very simple interface, and is not intended to
 
 ## Installation
 
-Download the binary for your platform from the release page:
+Download the binary for your platform from the [release page](https://github.com/kitproj/slack-cli/releases).
 
+### Linux
+
+**AMD64 (x86_64):**
+```bash
+sudo curl -fsL -o /usr/local/bin/slack https://github.com/kitproj/slack-cli/releases/download/v0.0.11/slack_v0.0.11_linux_amd64
+sudo chmod +x /usr/local/bin/slack
+```
+
+**ARM64:**
 ```bash
 sudo curl -fsL -o /usr/local/bin/slack https://github.com/kitproj/slack-cli/releases/download/v0.0.11/slack_v0.0.11_linux_arm64
+sudo chmod +x /usr/local/bin/slack
+```
+
+### MacOS
+
+**Intel (AMD64):**
+```bash
+sudo curl -fsL -o /usr/local/bin/slack https://github.com/kitproj/slack-cli/releases/download/v0.0.11/slack_v0.0.11_darwin_amd64
+sudo chmod +x /usr/local/bin/slack
+```
+
+**Apple Silicon (ARM64):**
+```bash
+sudo curl -fsL -o /usr/local/bin/slack https://github.com/kitproj/slack-cli/releases/download/v0.0.11/slack_v0.0.11_darwin_arm64
 sudo chmod +x /usr/local/bin/slack
 ```
 
