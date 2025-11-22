@@ -10,8 +10,8 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/kitproj/slack-cli/internal/keyring"
 	"github.com/slack-go/slack"
+	"github.com/zalando/go-keyring"
 	"golang.org/x/term"
 )
 

@@ -2,15 +2,16 @@ module github.com/kitproj/slack-cli
 
 go 1.24.4
 
+replace github.com/zalando/go-keyring => github.com/kitproj/go-keyring v0.2.8
+
 require (
 	github.com/mark3labs/mcp-go v0.42.0
 	github.com/slack-go/slack v0.17.3
-	github.com/zalando/go-keyring v0.2.6
+	github.com/zalando/go-keyring v0.2.8
 	golang.org/x/term v0.36.0
 )
 
 require (
-	al.essio.dev/pkg/shellescape v1.5.1 // indirect
 	github.com/bahlo/generic-list-go v0.2.0 // indirect
 	github.com/buger/jsonparser v1.1.1 // indirect
 	github.com/danieljoos/wincred v1.2.2 // indirect

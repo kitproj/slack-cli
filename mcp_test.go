@@ -5,6 +5,8 @@ import (
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/zalando/go-keyring"
 )
 
 func TestRun_MCPServer(t *testing.T) {
@@ -30,7 +32,7 @@ func TestRun_MCPServer(t *testing.T) {
 }
 
 func TestRun_MCPServerMissingToken(t *testing.T) {
-	// Unset SLACK_TOKEN env var
+	// Unset SLACK_TOKEN env var and clear keyring
 	oldToken := os.Getenv("SLACK_TOKEN")
 	os.Unsetenv("SLACK_TOKEN")
 	defer func() {
@@ -38,6 +40,9 @@ func TestRun_MCPServerMissingToken(t *testing.T) {
 			os.Setenv("SLACK_TOKEN", oldToken)
 		}
 	}()
+
+	// Clear keyring to ensure no token is stored
+	_ = keyring.Delete(keyringService, keyringUser)
 
 	ctx := context.Background()
 	err := run(ctx, []string{"mcp-server"})
