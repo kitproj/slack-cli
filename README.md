@@ -10,31 +10,11 @@ It's aimed at coding agents with a very simple interface, and is not intended to
 
 Download the binary for your platform from the [release page](https://github.com/kitproj/slack-cli/releases).
 
-### Linux
-
-**AMD64 (x86_64):**
 ```bash
-sudo curl -fsL -o /usr/local/bin/slack https://github.com/kitproj/slack-cli/releases/download/v0.0.13/slack_v0.0.13_linux_amd64
-sudo chmod +x /usr/local/bin/slack
-```
-
-**ARM64:**
-```bash
-sudo curl -fsL -o /usr/local/bin/slack https://github.com/kitproj/slack-cli/releases/download/v0.0.13/slack_v0.0.13_linux_arm64
-sudo chmod +x /usr/local/bin/slack
-```
-
-### MacOS
-
-**Intel (AMD64):**
-```bash
-sudo curl -fsL -o /usr/local/bin/slack https://github.com/kitproj/slack-cli/releases/download/v0.0.13/slack_v0.0.13_darwin_amd64
-sudo chmod +x /usr/local/bin/slack
-```
-
-**Apple Silicon (ARM64):**
-```bash
-sudo curl -fsL -o /usr/local/bin/slack https://github.com/kitproj/slack-cli/releases/download/v0.0.13/slack_v0.0.13_darwin_arm64
+VERSION=v0.0.13
+PLATFORM=$(uname -s | tr '[:upper:]' '[:lower:]')
+ARCH=$(uname -m | sed 's/x86_64/amd64/' | sed 's/aarch64/arm64/')
+sudo curl -fsL -o /usr/local/bin/slack https://github.com/kitproj/slack-cli/releases/download/${VERSION}/slack_${VERSION}_${PLATFORM}_${ARCH}
 sudo chmod +x /usr/local/bin/slack
 ```
 
