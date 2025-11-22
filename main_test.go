@@ -5,6 +5,8 @@ import (
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/zalando/go-keyring"
 )
 
 func TestConfigure_EmptyToken(t *testing.T) {
@@ -104,7 +106,7 @@ func TestRun_SendMessageMissingArgs(t *testing.T) {
 }
 
 func TestRun_SendMessageMissingToken(t *testing.T) {
-	// Ensure SLACK_TOKEN env var is not set
+	// Ensure SLACK_TOKEN env var is not set and keyring is cleared
 	oldToken := os.Getenv("SLACK_TOKEN")
 	os.Unsetenv("SLACK_TOKEN")
 	defer func() {
@@ -112,6 +114,9 @@ func TestRun_SendMessageMissingToken(t *testing.T) {
 			os.Setenv("SLACK_TOKEN", oldToken)
 		}
 	}()
+
+	// Clear keyring to ensure no token is stored
+	_ = keyring.Delete(keyringService, keyringUser)
 
 	ctx := context.Background()
 	err := run(ctx, []string{"send-message", "C1234567890", "test message"})
