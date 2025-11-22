@@ -14,13 +14,13 @@ Download the binary for your platform from the [release page](https://github.com
 
 **AMD64 (x86_64):**
 ```bash
-sudo curl -fsL -o /usr/local/bin/slack https://github.com/kitproj/slack-cli/releases/download/v0.0.11/slack_v0.0.11_linux_amd64
+sudo curl -fsL -o /usr/local/bin/slack https://github.com/kitproj/slack-cli/releases/download/v0.0.13/slack_v0.0.13_linux_amd64
 sudo chmod +x /usr/local/bin/slack
 ```
 
 **ARM64:**
 ```bash
-sudo curl -fsL -o /usr/local/bin/slack https://github.com/kitproj/slack-cli/releases/download/v0.0.11/slack_v0.0.11_linux_arm64
+sudo curl -fsL -o /usr/local/bin/slack https://github.com/kitproj/slack-cli/releases/download/v0.0.13/slack_v0.0.13_linux_arm64
 sudo chmod +x /usr/local/bin/slack
 ```
 
@@ -28,13 +28,13 @@ sudo chmod +x /usr/local/bin/slack
 
 **Intel (AMD64):**
 ```bash
-sudo curl -fsL -o /usr/local/bin/slack https://github.com/kitproj/slack-cli/releases/download/v0.0.11/slack_v0.0.11_darwin_amd64
+sudo curl -fsL -o /usr/local/bin/slack https://github.com/kitproj/slack-cli/releases/download/v0.0.13/slack_v0.0.13_darwin_amd64
 sudo chmod +x /usr/local/bin/slack
 ```
 
 **Apple Silicon (ARM64):**
 ```bash
-sudo curl -fsL -o /usr/local/bin/slack https://github.com/kitproj/slack-cli/releases/download/v0.0.11/slack_v0.0.11_darwin_arm64
+sudo curl -fsL -o /usr/local/bin/slack https://github.com/kitproj/slack-cli/releases/download/v0.0.13/slack_v0.0.13_darwin_arm64
 sudo chmod +x /usr/local/bin/slack
 ```
 
